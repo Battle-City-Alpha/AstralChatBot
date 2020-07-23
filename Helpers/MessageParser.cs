@@ -1,10 +1,9 @@
-﻿using BCA.Common;
+﻿using AstralBot.Announces;
+using BCA.Common;
 using BCA.Network.Packets.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AstralBot.Helpers
 {
@@ -50,6 +49,23 @@ namespace AstralBot.Helpers
                     break;
                 case "anim":
                     HandleAnimAsk(sender);
+                    break;
+            }
+        }
+
+        public void ParsePrivateMessage(PlayerInfo sender, string msg)
+        {
+            string[] words = msg.Split(' ');
+            switch (words[0])
+            {
+                case "annonce":
+                    HandleAnnounce(words.Skip(1).ToArray(), sender);
+                    break;
+                case "listeannonce":
+                    HandleAnnouncesList(sender);
+                    break;
+                case "supannonce":
+                    HandleDeleteAnnounce(words.Skip(1).ToArray(), sender);
                     break;
             }
         }
@@ -144,7 +160,7 @@ namespace AstralBot.Helpers
             Random rd = new Random();
 
             short n = -1;
-            if (!Int16.TryParse(msg.Last(), out n))
+            if (!short.TryParse(msg.Last(), out n))
                 return;
             string answer = "Résultat du tirage au sort : ";
             List<int> alreadydraw = new List<int>();
@@ -171,7 +187,7 @@ namespace AstralBot.Helpers
 
             short m = 0;
             short s = 0;
-            if (!Int16.TryParse(msg[0], out m) || !Int16.TryParse(msg[1], out s))
+            if (!short.TryParse(msg[0], out m) || !short.TryParse(msg[1], out s))
                 return;
 
             TimeSpan interval = TimeSpan.FromMinutes(m) + TimeSpan.FromSeconds(s);
@@ -185,6 +201,57 @@ namespace AstralBot.Helpers
                 return;
 
             _bot.StopTimer();
+        }
+
+        public void HandleAnnounce(string[] msg, PlayerInfo sender)
+        {
+            if (sender.Rank < PlayerRank.Animateurs)
+                return;
+
+            if (msg.Length < 3)
+                return;
+
+            short repetition = -1;
+            if (!short.TryParse(msg[0], out repetition))
+                return;
+
+            short interval = -1;
+            if (!short.TryParse(msg[1], out interval))
+                return;
+
+            _bot.AnnouncesManager.CreateAnnounce(sender, string.Join(" ", msg.Skip(2)), repetition, interval);
+            _commands.SendPrivateMessage(sender, "Ton annonce est créée !");
+        }
+        public void HandleAnnouncesList(PlayerInfo sender)
+        {
+            if (sender.Rank < PlayerRank.Animateurs)
+                return;
+
+            _commands.SendPrivateMessage(sender, "Liste des annonces : ");
+
+            short index = 0;
+            foreach (Announce a in _bot.AnnouncesManager.Announces)
+            {
+                _commands.SendPrivateMessage(sender, index + " - " + a.ToString());
+                index++;
+            }
+
+            _commands.SendPrivateMessage(sender, "Fin de la liste des annonces.");
+        }
+        public void HandleDeleteAnnounce(string[] msg, PlayerInfo sender)
+        {
+            if (sender.Rank < PlayerRank.Animateurs)
+                return;
+
+            if (msg.Length > 1)
+                return;
+
+            short id = -1;
+            if (!short.TryParse(msg[0], out id))
+                return;
+            _bot.AnnouncesManager.DeleteAnnounce(id);
+
+            _commands.SendPrivateMessage(sender, "L'annonce a été supprimé !");
         }
     }
 }

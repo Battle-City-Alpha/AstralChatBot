@@ -54,6 +54,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Announces\Announce.cs" />
+    <Compile Include="Announces\AnnouncesManager.cs" />
     <Compile Include="Bot.cs" />
     <Compile Include="BotCommands.cs" />
     <Compile Include="Configuration\BotConfig.cs" />

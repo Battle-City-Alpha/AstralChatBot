@@ -1,4 +1,5 @@
-﻿using AstralBot.Configuration;
+﻿using AstralBot.Announces;
+using AstralBot.Configuration;
 using AstralBot.Helpers;
 using AstralBot.Network;
 using BCA.Common;
@@ -8,9 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace AstralBot
@@ -28,6 +26,7 @@ namespace AstralBot
         public BotCommands Commands { get; set; }
         public MessageParser MessageParser { get; set; }
         public GameClient Client { get; set; }
+        public AnnouncesManager AnnouncesManager { get; set; }
 
         public Dictionary<int, PlayerInfo> PlayersConnected { get; set; }
         public Dictionary<string, DateTime> SeenTime { get; set; }
@@ -43,6 +42,7 @@ namespace AstralBot
 
             Commands = new BotCommands(this);
             MessageParser = new MessageParser(this);
+            AnnouncesManager = new AnnouncesManager(this);
 
             Client = new GameClient(this);
 
@@ -75,8 +75,8 @@ namespace AstralBot
                     permaanim += "** " + anim.Name + " ** , ";
             }
             answer = answer.Substring(0, answer.Length - 2) + ".";
-            
-            permaanim = permaanim.Substring(0, permaanim.Length - 3) + "."; 
+
+            permaanim = permaanim.Substring(0, permaanim.Length - 3) + ".";
             string gofurther = "Pour plus d'informations, consultez le planning via le bouton * Animations * !";
 
             Commands.SendMessage(answer);

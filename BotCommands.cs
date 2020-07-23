@@ -3,12 +3,7 @@ using AstralBot.Network;
 using BCA.Common;
 using BCA.Network.Packets.Enums;
 using BCA.Network.Packets.Standard.FromClient;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AstralBot
 {
@@ -40,6 +35,14 @@ namespace AstralBot
             {
                 Message = msg,
                 Type = cmt
+            });
+        }
+        public void SendPrivateMessage(PlayerInfo target, string msg)
+        {
+            _client.Send(PacketType.PrivateMessage, new StandardClientPrivateMessage
+            {
+                Message = msg,
+                Target = target
             });
         }
 

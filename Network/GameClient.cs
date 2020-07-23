@@ -9,13 +9,9 @@ using BCA.Network.Packets.Standard.FromServer;
 using Newtonsoft.Json;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace AstralBot.Network
 {
@@ -82,6 +78,9 @@ namespace AstralBot.Network
                     case PacketType.ChatMessage:
                         OnChatMessage(JsonConvert.DeserializeObject<StandardServerChatMessage>(packet));
                         break;
+                    case PacketType.PrivateMessage:
+                        OnPrivateChatMessage(JsonConvert.DeserializeObject<StandardServerPrivateMessage>(packet));
+                        break;
                     case PacketType.Login:
                         OnLogin(JsonConvert.DeserializeObject<StandardServerLogin>(packet));
                         break;
@@ -125,7 +124,7 @@ namespace AstralBot.Network
                 {
                     writer.Write((short)packetId);
                     byte[] toSend = CompressHelper.Zip(JsonConvert.SerializeObject(packet));
-                    writer.Write((int)toSend.Length);
+                    writer.Write(toSend.Length);
                     writer.Write(toSend);
                 }
                 Send(stream.ToArray());
@@ -198,6 +197,14 @@ namespace AstralBot.Network
                 default:
                     break;
             }
+        }
+        private void OnPrivateChatMessage(StandardServerPrivateMessage packet)
+        {
+            PlayerInfo sender = packet.Player;
+            string msg = packet.Message;
+
+            if (msg.StartsWith("!"))
+                _parser.ParsePrivateMessage(sender, msg.Substring(1));
         }
 
         private void OnAddHubPlayer(StandardServerAddHubPlayer packet)
