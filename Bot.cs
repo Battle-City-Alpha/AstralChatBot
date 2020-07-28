@@ -16,10 +16,12 @@ namespace AstralBot
     public class Bot
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        //public static string debug_ip = "127.0.0.1";
-        public static string debug_ip = "185.212.225.85";
+        public static string debug_ip = "127.0.0.1";
+        //public static string debug_ip = "185.212.225.85";
         public static string test_ip = "185.212.226.12";
         public static string release_ip = "185.212.225.85";
+
+        public static string path = AppDomain.CurrentDomain.BaseDirectory;
 
 
         public BotConfig BotConfig { get; set; }
@@ -51,10 +53,21 @@ namespace AstralBot
             Client.UpdateHubPlayer += UpdatePlayer;
             Client.RemoveHubPlayer += RemovePlayer;
             Client.GetAnimations += GetAnimations;
+            Client.GetRanking += GetRanking;
 
             PlayersConnected = new Dictionary<int, PlayerInfo>();
 
             Client.StartConnexion();
+        }
+
+        private void GetRanking(RankingPlayerInfos[] ranking)
+        {
+            string answer = "Classement : ";
+            for (int i = 0; i < 3; i++)
+                answer += (i + 1) + ". " + ranking[i].Username + " (" + ranking[i].ELO + ") - ";
+            answer = answer.Substring(0, answer.Length - 3);
+
+            Commands.SendMessage(answer + ".");
         }
 
         private void Client_LoginSuccess()
@@ -91,8 +104,8 @@ namespace AstralBot
 
         private void LoadConfig()
         {
-            if (File.Exists(Path.Combine(Program.path, "config.json")))
-                BotConfig = JsonConvert.DeserializeObject<BotConfig>(File.ReadAllText(Path.Combine(Program.path, "config.json")));
+            if (File.Exists(Path.Combine(path, "botconfig.json")))
+                BotConfig = JsonConvert.DeserializeObject<BotConfig>(File.ReadAllText(Path.Combine(path, "botconfig.json")));
             else
                 BotConfig = new BotConfig();
 
@@ -101,13 +114,13 @@ namespace AstralBot
         }
         public void SaveConfig()
         {
-            File.WriteAllText(Path.Combine(Program.path, "config.json"), JsonConvert.SerializeObject(BotConfig));
+            File.WriteAllText(Path.Combine(path, "botconfig.json"), JsonConvert.SerializeObject(BotConfig));
             logger.Info("Config saved.");
         }
         private void LoadSeenTime()
         {
-            if (File.Exists(Path.Combine(Program.path, "seentime.json")))
-                SeenTime = JsonConvert.DeserializeObject<Dictionary<string, DateTime>>(File.ReadAllText(Path.Combine(Program.path, "seentime.json")));
+            if (File.Exists(Path.Combine(path, "seentime.json")))
+                SeenTime = JsonConvert.DeserializeObject<Dictionary<string, DateTime>>(File.ReadAllText(Path.Combine(path, "seentime.json")));
             else
                 SeenTime = new Dictionary<string, DateTime>();
             logger.Info("SeenTime loaded.");
@@ -115,7 +128,7 @@ namespace AstralBot
         }
         public void SaveSeenTime()
         {
-            File.WriteAllText(Path.Combine(Program.path, "seentime.json"), JsonConvert.SerializeObject(SeenTime));
+            File.WriteAllText(Path.Combine(path, "seentime.json"), JsonConvert.SerializeObject(SeenTime));
             logger.Info("SeenTime saved.");
         }
 

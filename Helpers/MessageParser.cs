@@ -29,6 +29,14 @@ namespace AstralBot.Helpers
                 case "kick":
                     HandleKick(words.Skip(1).ToArray(), sender);
                     break;
+                case "kb":
+                case "ban":
+                    HandleBanMute(words.Skip(1).ToArray(), sender, true);
+                    break;
+                case "m":
+                case "mute":
+                    HandleBanMute(words.Skip(1).ToArray(), sender, false);
+                    break;
                 case "seen":
                     HandleSeen(words.Skip(1).ToArray(), sender);
                     break;
@@ -50,9 +58,11 @@ namespace AstralBot.Helpers
                 case "anim":
                     HandleAnimAsk(sender);
                     break;
+                case "ranking":
+                    HandleGetRanking(sender);
+                    break;
             }
         }
-
         public void ParsePrivateMessage(PlayerInfo sender, string msg)
         {
             string[] words = msg.Split(' ');
@@ -66,6 +76,9 @@ namespace AstralBot.Helpers
                     break;
                 case "supannonce":
                     HandleDeleteAnnounce(words.Skip(1).ToArray(), sender);
+                    break;
+                case "help":
+                    _commands.SendHelp(sender);
                     break;
             }
         }
@@ -95,6 +108,36 @@ namespace AstralBot.Helpers
                 else
                     reason = string.Join(" ", msg.Skip(1).ToArray());
                 _commands.SendKick(target, reason);
+            }
+        }
+        public void HandleBanMute(string[] msg, PlayerInfo sender, bool ban)
+        {
+            if (sender.Rank < PlayerRank.Animateurs)
+                return;
+            PlayerInfo target = _bot.GetPlayer(msg[0]);
+            if (target == null)
+            {
+                _commands.SendMessage(string.Format("{0} ne semble pas connecté...", msg[0]));
+                return;
+            }
+            else
+            {
+                if (target.Rank >= sender.Rank)
+                { _commands.SendKick(sender, string.Format("{0} calme toi...", sender.Username)); return; }
+
+                short time = -1;
+                if (!short.TryParse(msg[1], out time))
+                    return;
+
+                string reason;
+                if (msg.Length < 2)
+                    reason = "Aucune.";
+                else
+                    reason = string.Join(" ", msg.Skip(2).ToArray());
+                if (ban)
+                    _commands.SendBan(target, time, reason);
+                else
+                    _commands.SendMute(target, time, reason);
             }
         }
 
@@ -129,6 +172,10 @@ namespace AstralBot.Helpers
         public void HandleAnimAsk(PlayerInfo sender)
         {
             _commands.SendAskAnimation();
+        }
+        public void HandleGetRanking(PlayerInfo sender)
+        {
+            _commands.SendAskRanking();
         }
 
         public void HandleDice(PlayerInfo sender)

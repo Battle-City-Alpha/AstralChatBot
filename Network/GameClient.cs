@@ -27,6 +27,7 @@ namespace AstralBot.Network
         public event Action<PlayerInfo> RemoveHubPlayer;
 
         public event Action<Animation[]> GetAnimations;
+        public event Action<RankingPlayerInfos[]> GetRanking;
 
         public GameClient(Bot bot) : base(new NetworkClient())
         {
@@ -40,15 +41,6 @@ namespace AstralBot.Network
             logger.Info("Attempt of connexion... IP : " + GetIp());
 
             Connect(IPAddress.Parse(GetIp()), 9100);
-
-            while (this.IsConnected)
-            {
-                Update();
-                Thread.Sleep(1);
-            }
-
-            logger.Info("Disconnection...");
-            Console.ReadLine();
         }
 
         public string GetIp()
@@ -101,6 +93,9 @@ namespace AstralBot.Network
                         break;
                     case PacketType.AskAnimations:
                         OnGetAnimations(JsonConvert.DeserializeObject<StandardServerGetAnimations>(packet));
+                        break;
+                    case PacketType.GetRanking:
+                        OnGetRanking(JsonConvert.DeserializeObject<StandardServerGetRanking>(packet));
                         break;
                 }
             }
@@ -228,6 +223,11 @@ namespace AstralBot.Network
         public void OnGetAnimations(StandardServerGetAnimations packet)
         {
             GetAnimations?.Invoke(packet.Animations);
+        }
+
+        public void OnGetRanking(StandardServerGetRanking packet)
+        {
+            GetRanking?.Invoke(packet.Rankings);
         }
     }
 }
